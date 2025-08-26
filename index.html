@@ -1,0 +1,45 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>IG Grid Preview</title>
+<style>
+  :root { --maxw: 420px; --gap: 2px; }
+  body { margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+  .wrap { max-width: var(--maxw); margin: 0 auto; padding: 8px; }
+  .grid { display:grid; grid-template-columns: repeat(3, 1fr); gap: var(--gap); }
+  .tile { position:relative; width:100%; aspect-ratio:1/1; background:#f2f2f2; overflow:hidden; }
+  .tile img { width:100%; height:100%; object-fit:cover; display:block; }
+  .empty { display:flex; align-items:center; justify-content:center; color:#777; font-size:14px; padding:32px 0; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div id="grid" class="grid"></div>
+    <div id="empty" class="empty" style="display:none;">No items. Add rows in your Notion DB.</div>
+  </div>
+<script>
+(async () => {
+  try {
+    const res = await fetch("./api/notion");
+    const data = await res.json();
+    const items = data.items || [];
+    const grid = document.getElementById("grid");
+    const empty = document.getElementById("empty");
+
+    if (!items.length) { empty.style.display = "block"; return; }
+
+    grid.innerHTML = items.map(i => `
+      <div class="tile" title="${(i.caption||"").replace(/"/g,'&quot;')}">
+        ${i.image ? `<img src="${i.image}" alt="">` : ""}
+      </div>
+    `).join("");
+  } catch (e) {
+    console.error(e);
+    document.getElementById("empty").style.display = "block";
+  }
+})();
+</script>
+</body>
+</html>
